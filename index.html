@@ -616,12 +616,48 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 function handleSubmit(btn) {
-  const orig = btn.innerHTML;
-  btn.innerHTML = 'Sending...'; btn.disabled = true;
-  setTimeout(() => {
-    btn.innerHTML = '✓ Message Sent!'; btn.style.background = '#16a34a';
-    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.disabled = false; }, 3000);
-  }, 1200);
+  const name = document.querySelector('input[type="text"]').value;
+  const email = document.querySelector('input[type="email"]').value;
+  const message = document.querySelector('textarea').value;
+
+  if (!name || !email || !message) {
+    alert("Please fill all fields!");
+    return;
+  }
+
+  btn.innerHTML = "Sending...";
+  btn.disabled = true;
+
+  fetch('http://localhost:8001/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      message: message
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      btn.innerHTML = "✓ Message Sent!";
+      btn.style.background = "#16a34a";
+    } else {
+      btn.innerHTML = "❌ Failed!";
+    }
+  })
+  .catch(() => {
+    btn.innerHTML = "❌ Error!";
+  })
+  .finally(() => {
+    setTimeout(() => {
+      btn.innerHTML = "Send Message →";
+      btn.style.background = "";
+      btn.disabled = false;
+    }, 3000);
+  });
 }
 
 const sections = document.querySelectorAll('section[id]');
